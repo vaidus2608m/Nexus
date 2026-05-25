@@ -11,8 +11,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchLobbies = async () => {
+  const fetchLobbies = async () => {
       try {
         setLoading(true);
         const response = await API.get('/lobby');
@@ -28,8 +27,9 @@ export function Dashboard() {
       }
     }
 
+  useEffect(() => {
     fetchLobbies();
-  }, [])
+  }, []);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -53,6 +53,7 @@ export function Dashboard() {
       <CreateLobbyModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        onLobbyCreated={fetchLobbies}
       />
     </div>
   );

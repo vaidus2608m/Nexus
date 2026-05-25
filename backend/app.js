@@ -26,6 +26,9 @@ app.use("/api/v1/users", userRoutes);
 import lobbyRoutes from "./src/routes/lobby.route.js";
 app.use("/api/v1/lobby", lobbyRoutes);
 
+import configRouter from "./src/routes/config.route.js"
+app.use('/api/v1/config', configRouter)
+
 app.get("/", (req, res) => {
   console.log("Nexus's Here");
 });
