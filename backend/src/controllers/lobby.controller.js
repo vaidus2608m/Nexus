@@ -150,6 +150,20 @@ const joinLobby = asyncHandler(async (req, res) => {
     throw new APIError(404, "Lobby Not Found");
   }
 
+  const activeLobbyStatuses = [LOBBY_STATUS.WAITING, LOBBY_STATUS.PLAYING];
+  
+  const alreadyInALobby = await Lobby.findOne({
+    status: { $in: activeLobbyStatuses },
+    players: userId
+  });
+
+  if (alreadyInALobby) {
+    throw new APIError(
+      400, 
+      `You are already in an active lobby: "${alreadyInALobby.title}". Leave that lobby first!`
+    );
+  }
+
   if(lobby.players.length >= lobby.maxPlayers){
     throw new APIError(403, "Lobby is already full");
   }
