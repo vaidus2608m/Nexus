@@ -1,15 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Users, Gamepad2, Shield } from 'lucide-react';
 import { Button } from './Button';
+import API from '../api/axios';
 
-export function LobbyCard({ lobby }) {
+export function LobbyCard({ lobby, onLobbyJoin }) {
   const { title, game, players, maxPlayers, levelReq, isPrivate } = lobby;
+  const [joining, setJoining] = useState(false);
+
+  const handleJoin = async () => {
+    try {
+      setJoining(true);
+
+      const response = await API.patch(`/lobby/join/${lobby._id}`);
+
+      if(response.data?.success){
+        alert('Joined Lobby Successfully');
+        if(onLobbyJoin) onLobbyJoin();
+      }
+    } catch (error) {
+      console.error("Error Joining Lobby:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to join lobby");
+    } finally {
+      setJoining(false);
+    }
+  }
   
-  const isFull = players >= maxPlayers;
+  const currentPlayersCount = players.length;
+  const isFull = currentPlayersCount >= maxPlayers;
 
   return (
     <div className="bg-vexor-card border border-gray-800 rounded-lg p-5 hover:border-vexor-accent/50 transition-all duration-300 group flex flex-col h-full relative overflow-hidden">
-      {/* Decorative gradient blur */}
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-vexor-accent/5 rounded-full blur-2xl group-hover:bg-vexor-accent/10 transition-colors pointer-events-none" />
       
       <div className="flex justify-between items-start mb-4">
@@ -45,10 +65,11 @@ export function LobbyCard({ lobby }) {
       <div className="mt-auto pt-4 border-t border-gray-800/50">
         <Button 
           variant={isFull ? 'secondary' : 'primary'} 
-          className="w-full"
-          disabled={isFull}
+          className="w-full justify-center"
+          onClick={handleJoin}
+          disabled={isFull || joining}
         >
-          {isFull ? 'Lobby Full' : 'Join Lobby'}
+          {joining ? 'Joining...' : isFull ? 'Lobby Full' : 'Join Lobby'}
         </Button>
       </div>
     </div>

@@ -137,4 +137,36 @@ const kickPlayer = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, updatedLobby, "Player is kicked"))
 })
 
-export {createLobby, getActiveLobbies, leaveLobby, endMatch, startMatch, kickPlayer};
+const joinLobby = asyncHandler(async (req, res) => {
+  const {lobbyId} = req.params;
+  const userId = req.user?._id;
+
+  if(!userId){
+    throw new APIError(403, "Authentication required to join a lobby");
+  }
+
+  const lobby = await Lobby.findById(lobbyId);
+  if(!lobby){
+    throw new APIError(404, "Lobby Not Found");
+  }
+
+  if(lobby.players.length >= lobby.maxPlayers){
+    throw new APIError(403, "Lobby is already full");
+  }
+
+  const currentMembers = lobby.players.map((id) => id.toString());
+  if (currentMembers.includes(userId.toString())) {
+    throw new APIError(403, "You are already a member of this lobby");
+  }
+
+  if(req.user.nexusLevel < lobby.minNexusLevel){
+    throw new APIError(403, `Your level is ${req.user.nexusLevel}, Lobby requires min level of ${lobby.levelReq}`);
+  }
+
+  lobby.players.push(userId);
+  await lobby.save();
+
+  return res.status(200).json(new APIResponse(200, lobby, "Successfull joined nexus lobby"))
+})
+
+export {createLobby, getActiveLobbies, leaveLobby, endMatch, startMatch, kickPlayer, joinLobby};
